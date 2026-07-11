@@ -1,0 +1,118 @@
+<!doctype html>
+<!--
+  QUESTION SHEET TEMPLATE (display only; answers come back by voice note)
+
+  How Claude fills this: replace every {{PLACEHOLDER}} below.
+    {{FOUNDER}}        founder first name
+    {{BUSINESS}}       business name
+    {{COUNT}}          total question count
+    {{SENDER}}         the user's first name (who the founder sends notes to)
+    {{SECTIONS}}       repeated <details> blocks; copy the structure of the one
+                       marked EXAMPLE SECTION, one per interview block, with
+                       sequential question numbering across sections (use the
+                       value="N" attribute on each <li>).
+  Progress checkboxes save to the reader's own browser (localStorage), nothing
+  is transmitted anywhere. The file is self-contained apart from Google Fonts.
+  Brand: JUST DIGITAL v2.1 tokens. Swap the :root values to re-brand.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{BUSINESS}}: {{COUNT}} Questions for {{FOUNDER}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300..800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#E8E4DF; --ink:#0F172A; --pink:#FF4D8D; --aqua:#5CECC6; --honey:#FBBA2C;
+    --card:#F4F1EC; --rule:#D4CFC7; --muted:#4A5268;
+    --display:"Bebas Neue","Arial Narrow",sans-serif;
+    --body:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+    --mono:"DM Mono",ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:var(--body); background:var(--paper); color:var(--ink); line-height:1.55; }
+  .wrap { max-width:680px; margin:0 auto; padding:24px 16px 80px; }
+  h1 { font-family:var(--display); font-weight:400; font-size:42px; line-height:.95; margin:10px 0 6px; text-transform:uppercase; }
+  .sub { color:var(--muted); margin:0 0 18px; max-width:65ch; }
+  .howto { background:var(--card); border:1px solid var(--rule); border-radius:14px; padding:16px 18px; margin:0 0 10px; }
+  .howto strong { display:block; font-family:var(--display); font-weight:400; font-size:20px; text-transform:uppercase; margin-bottom:6px; }
+  #bar { height:10px; border-radius:999px; background:var(--ink); overflow:hidden; margin:6px 0 24px; }
+  #fill { height:100%; width:100%; background:var(--aqua); border-radius:999px; transform:scaleX(0); transform-origin:left; transition:transform .22s; }
+  #barlabel { font-family:var(--mono); font-size:12px; color:var(--muted); }
+  details { background:var(--card); border:1px solid var(--rule); border-radius:14px; padding:4px 18px; margin:14px 0; }
+  summary { display:flex; align-items:center; gap:10px; cursor:pointer; list-style:none; padding:12px 0; }
+  summary::-webkit-details-marker { display:none; }
+  summary::before { content:"▸"; transition:transform .15s; }
+  details[open] summary::before { transform:rotate(90deg); }
+  .t { font-family:var(--display); font-weight:400; font-size:22px; text-transform:uppercase; flex:1; }
+  .chip { font-size:12px; font-weight:700; border:1px solid var(--rule); color:var(--muted); border-radius:999px; padding:3px 10px; white-space:nowrap; }
+  input[type=checkbox] { width:22px; height:22px; accent-color:var(--aqua); cursor:pointer; }
+  ol { margin:0 0 14px; padding-left:22px; }
+  li { margin:0 0 10px; max-width:65ch; }
+  .foot { margin-top:36px; font-family:var(--mono); font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hey {{FOUNDER}}. {{COUNT}} Questions, One Coffee</h1>
+  <p class="sub">So everything we write sounds like you and only claims what's true.
+  Rambling is perfect, we'll sort it out. <strong>Skip anything.</strong> A half answer
+  beats a perfect answer we never get.</p>
+
+  <div class="howto">
+    <strong>How to answer (the easy way)</strong>
+    Open your voice-note app (WhatsApp, voice memos, anything). Record one note per section
+    below and just talk through the questions in order. One section at a time is perfect;
+    you don't have to do this in one go. Send the notes to {{SENDER}} whenever they're ready.
+    Tick the box on a section when you've sent it, this page remembers your progress.
+  </div>
+
+  <div id="barlabel">0 sections done</div>
+  <div id="bar"><div id="fill"></div></div>
+
+  {{SECTIONS}}
+  <!-- EXAMPLE SECTION (copy per block, remove this comment in output):
+  <details open>
+    <summary><span class="t">Your story</span><span class="chip">~3 min</span>
+      <input type="checkbox" data-sec="your-story" title="Mark section done" onclick="event.stopPropagation()">
+    </summary>
+    <ol>
+      <li value="1">Question text...</li>
+      <li value="2">Question text...</li>
+    </ol>
+  </details>
+  -->
+
+  <p class="foot">PRIVATE PAGE · NOTHING IS TRANSMITTED · PROGRESS SAVES ON YOUR DEVICE ONLY</p>
+</div>
+<script>
+(function () {
+  var boxes = document.querySelectorAll("input[type=checkbox]");
+  var KEY = "voicenote-sheet-" + (document.title || "");
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  function paint() {
+    var done = 0;
+    boxes.forEach(function (b) { if (b.checked) done++; });
+    document.getElementById("fill").style.transform = "scaleX(" + (done / boxes.length) + ")";
+    document.getElementById("barlabel").textContent = done >= boxes.length
+      ? "All " + boxes.length + " done. You legend."
+      : done + " of " + boxes.length + " sections done";
+  }
+  boxes.forEach(function (b) {
+    var id = b.getAttribute("data-sec");
+    b.checked = !!state[id];
+    b.addEventListener("change", function () {
+      state[id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      paint();
+    });
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
