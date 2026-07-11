@@ -1,0 +1,14 @@
+# Cloudflare Worker config. SETUP.md (executed by Claude Code) fills the two
+# REPLACE-AT-SETUP values: the KV namespace id and a fresh page token.
+name = "client-intake"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+kv_namespaces = [
+  { binding = "STORE", id = "REPLACE-AT-SETUP-KV-ID" }
+]
+
+[vars]
+# The unguessable path segment for the page and the upload token.
+# Rotate by changing this and redeploying (the old link dies immediately).
+PAGE_TOKEN = "REPLACE-AT-SETUP-TOKEN"

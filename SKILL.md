@@ -1,123 +1,118 @@
 ---
 name: onboarding-intake-voice-note
-description: Onboard a small-business client with zero infrastructure. Reads the client's website and public reviews, generates a personalized founder interview (25-30 questions in 8 voice-note-sized sections), then turns the founder's voice-note answers into four onboarding documents (brand brief, founder story, approved claims, prohibited claims). Use when the user says "onboard my client", pastes a client website for onboarding, wants founder interview questions, or has voice-note answers/transcripts to turn into brand documents.
+description: Onboard a small-business client end to end with only Claude Code and a free Cloudflare account. Deploys a branded voice-recording interview page (waveform, per-section recording, progress, ADHD-friendly), personalizes 25-30 questions from the client's website, then pulls and transcribes the founder's recorded answers locally and turns them into four onboarding documents (brand brief, founder story, approved claims, prohibited claims). Use when the user says "set up my intake system", "onboard my client", pastes a client website for onboarding, or says the client has finished recording.
 ---
 
-# Onboarding Intake by Voice Note
+# Client Onboarding by Voice, End to End
 
-Turn a client's website plus one founder conversation into the four documents every content
-engagement needs, with the founder answering by **voice note** in whatever app they already
-use. No servers, no accounts, no forms.
+You (Claude) run the whole system. The user needs **Claude Code and a free Cloudflare
+account. That's it.** No GitHub, no servers to manage, no code to read.
 
-The flow has four stages. Stages 1 and 2 happen in one sitting; stage 3 happens on the
-founder's own time; stage 4 happens when the answers come back (often a later chat: if the
-user arrives with transcripts in hand, jump straight to stage 4).
+Four moments, each triggered by a plain sentence from the user:
 
-**Golden rule for every stage: the founder's words beat your words.** When they said it
-well, quote them. The phrasing is the product.
+| The user says | You do |
+|---|---|
+| "Set up my intake system" | **SETUP.md**, step by step (one time, ~30 min) |
+| "Onboard my client, site is X" | Stages 1-2 below: research, personalize, deploy their page |
+| "The client says he's done" | Stage 3: pull + transcribe the recordings |
+| (automatically after stage 3) | Stage 4: write the four onboarding documents |
+
+**Golden rule everywhere: the founder's words beat your words.** The phrasing is the product.
 
 ---
 
-## Stage 1 — Read the evidence (before asking anything)
+## Stage 0 — First run only
 
-Ask the user for the client's **website URL** (and, if handy: links to their Google reviews,
-social profiles, or old marketing material). Then research with real tools; never invent.
+If `system/wrangler.toml` still contains `REPLACE-AT-SETUP`, stop and run **SETUP.md**
+first. It installs the tools, logs the user into Cloudflare, deploys the page, and
+verifies everything with a test upload.
 
-1. **Fetch the website**: homepage, about, services/pricing, contact. Extract verbatim:
-   - Exact business name and tagline
-   - Every service/product with its exact name as written
-   - Service area, years in business, credentials (insurance, licenses, certifications)
-   - Guarantee wording, review-count claims, calls to action, phone/email
-   - First-person copy (owner voice) and anything unusual or distinctive
-2. **Search for public reviews** (Google, Facebook, industry directories). Mine verbatim
-   buyer vocabulary: the literal words customers use to praise or complain. Note what
-   reviews praise repeatedly (candidate proof points).
-3. **Note gaps and contradictions**: claims on third-party directories that are NOT on the
-   client's own site (these must never be published without founder confirmation), and any
-   numbers that disagree (e.g. review counts).
+## Stage 1 — Read the evidence (per client, before asking anything)
 
-**Rules:** if a source is unreachable, say so and move on. Everything gathered is *candidate*
-material until the founder confirms it. If there is no website at all, say the interview will
-carry the whole load and proceed; the question list simply loses its "your site says" hooks.
+Get the client's **website URL** from the user (plus review links or old marketing
+material if handy). Research with real tools; never invent.
 
-## Stage 2 — Generate the personalized interview
+1. **Fetch the website** (home, about, services, contact). Extract verbatim: business
+   name, every service with its exact name, service area, years in business, credentials,
+   guarantee wording, review claims, CTAs, owner-voice copy, distinctive gear or methods.
+2. **Search public reviews** (Google, Facebook, directories). Mine verbatim buyer
+   vocabulary and repeated praise (candidate proof points).
+3. **Note gaps and contradictions**: third-party claims NOT on the client's own site
+   (never published without founder confirmation), disagreeing numbers.
 
-Build the question list from `question-bank.md` (read it: every block explains its purpose
-and how to personalize). Non-negotiables:
+If a source is unreachable, say so and move on. No website at all? The interview carries
+the load; questions lose their "your site says" hooks but everything still works.
 
-- **8 sections, 25 to 30 questions total**, each section sized to one voice note (2 to 4
-  minutes). Order: Your story → The person behind the business → The services → The claims →
-  How you win work → Insider knowledge → Working together → The customers & the area.
-- **Anchor questions in stage-1 evidence.** "Your site says X, is that still true?" beats
-  "tell me about X". Questions that reference their actual gear, wording, or review count
-  show the founder someone did their homework; that is the wow factor.
-- **Only their own website feeds the questions.** Never confront the founder with claims
-  from third-party directories or competitor research; ask open questions instead and let
-  their answers confirm or kill those claims.
-- **Warm, plain, spoken English.** Contractions. No em dashes. No jargon. The founder should
-  feel interviewed by a curious human, not audited.
-- Open with permission to be imperfect: it is about one coffee's worth of talking, rambling
-  is perfect, **skip anything** (a half answer beats a perfect answer you never get).
+## Stage 2 — Personalize and deploy the interview page
 
-Deliver as:
-1. **A markdown document** the user can paste anywhere (default), formatted like
-   `example/example-questions.md`, and
-2. **Optionally** (offer it): a self-contained branded HTML question sheet from
-   `templates/question-sheet.html`, following the placeholder instructions inside it. It is
-   a display page only (checkbox progress saves in the reader's browser); answers still come
-   back by voice note. The user can email the file or host it anywhere.
+1. Build the question set from **`question-bank.md`** (read it; every block explains its
+   purpose and personalization). Rules: 8 sections sized to one voice note each, 25-30
+   questions, anchored in stage-1 evidence, own-site-only, warm spoken English, no em
+   dashes, skip-permission stated up front. `example/example-questions.md` shows the depth.
+2. Rewrite the `QUESTIONS` constant in `system/worker.js` with the new set (same object
+   shape: id, short, title, min, qs). Replace `{{FOUNDER}}` and `{{BUSINESS}}` with the
+   client's first name and business name.
+3. `node --check system/worker.js`, then from `system/`: `npx wrangler deploy`.
+4. Verify live: `curl <url>/i/<token>` contains the new questions; wrong token → 404.
+5. Give the user the link plus a short message they can forward to the founder (voice-y,
+   two sentences, mentions the mic test button and that skipping is fine).
 
-Close stage 2 by telling the user exactly what to send the founder, including the reply
-instructions (next stage's opening lines are already written into the question document).
+The page the founder gets: all questions in collapsible sections with time estimates, a
+mic-and-sending self-test, tap-to-record with a live waveform, per-section recording and
+progress that survives coming back later, a floating record bar, and a typed-answer box.
+Every take auto-uploads to the user's own Cloudflare storage; failed sends fall back to
+download-and-text-it. Multiple founders/clients in sequence are fine: takes are keyed by
+timestamp and section, and stage 3 archives between clients.
 
-## Stage 3 — The founder talks (nothing for you to do)
+## Stage 3 — "The client says he's done"
 
-The question document itself instructs the founder:
+From `system/`: `bash ingest.sh` — it pulls every take from KV, transcribes locally with
+whisper (drop trade terms into `system/vocab.txt` first so words like "eavestrough" come
+out right), and writes `system/transcripts.md` organized by take with section suffixes.
 
-- Answer by **voice note in any app** (WhatsApp, Signal, iPhone Voice Memos, Android
-  Recorder), one note per section, or one long ramble; both work.
-- Skip freely. Half answers welcome. Typed answers welcome too.
-- Send the notes back to the user (the person onboarding them), not to any system.
+- Read the transcript back critically: flag garbled names/numbers rather than guessing.
+- If a section is missing, tell the user which questions are unanswered; offer a mini
+  follow-up list.
+- After the user confirms the transcripts look right: `bash ingest.sh --archive` saves the
+  audio locally and empties the store for the next client.
 
-## Stage 4 — Turn answers into the four documents
+## Stage 4 — Write the four documents
 
-When the user returns with audio files or transcripts (most voice-note apps transcribe;
-audio uploaded to the chat can be transcribed directly):
+Fill the templates from `templates/` (each has inline guidance), into a folder the user
+picks (default `clients/{client-name}/`):
 
-1. **Assemble a raw transcript** organized by section, keeping the founder's phrasing.
-   Flag inaudible/uncertain spots rather than guessing, especially names and numbers.
-2. **Fill the four templates** from `templates/` (each has inline guidance):
-   - `brand-brief.md` — business, moat, personas (from review mining + the customer
-     questions), primary CTA, wedge, offerings table, proof points, competitor exclusion
-     list, buyer vocabulary (verbatim quotes)
-   - `founder-story.md` — their story and voice samples, first person preserved
-   - `approved-claims.md` — ONLY claims the founder explicitly confirmed, each with its
-     source (their site, or "founder interview, {date}")
-   - `prohibited-claims.md` — keep the generic starter list, then add anything the founder
-     refused, anything unconfirmed from third-party listings, and anything regulated in
-     their trade
-3. **Report the gaps**: unanswered sections, claims still needing written confirmation
-   (insurance amounts, certifications, guarantees), and contradictions between what the
-   site says and what the founder said. Never resolve a contradiction silently.
+1. **brand-brief.md** — business, moat, personas, segments (easiest/whales/dream), CTA,
+   wedge, offerings table, proof points, competitor exclusion list, buyer vocabulary
+2. **founder-story.md** — their story and voice samples, first person preserved
+3. **approved-claims.md** — ONLY claims the founder confirmed, each with a source; risky
+   ones (insurance amounts, certifications) go to the "waiting room" pending written OK
+4. **prohibited-claims.md** — the generic starter list plus refusals, unconfirmed
+   third-party claims, and regulated territory for their trade
 
-### Compliance guardrails (apply while writing, adjust to jurisdiction)
+Close with a gap report: unanswered sections, claims awaiting written confirmation, and
+site-vs-founder contradictions. Never resolve a contradiction silently.
 
-- No unverifiable superlatives ("best in town", "#1") without a citable third-party source.
-- Credentials (insurance, bonding, licenses, health/childcare/financial qualifications):
-  publish only what the founder confirmed, in their exact scope. When in doubt, understate.
-- Guarantees: exact wording with its conditions, or nothing.
-- Reviews: quote real ones only; never compose composite "customer quotes".
-- The founder's local spelling and currency (e.g. Canadian English and CAD in Ontario).
+### Compliance guardrails (while writing, adjust to jurisdiction)
+
+No unverifiable superlatives; credentials only as confirmed and in exact scope; guarantees
+verbatim with conditions or not at all; real reviews only, never composite quotes; the
+client's local spelling and currency.
+
+## Fallback: no Cloudflare (voice-notes-only mode)
+
+If the user can't or won't set up Cloudflare, everything still works with one substitution:
+skip SETUP.md and the page. Deliver stage 2's questions as a markdown doc (and optionally
+the pretty static sheet from `templates/question-sheet.html`, which records nothing), have
+the founder answer by **WhatsApp voice notes or phone voice memos**, and run stage 4 from
+pasted transcripts or uploaded audio. Same questions, same four documents.
 
 ## Degradation table
 
 | Missing | Do this |
 |---|---|
-| No website | Interview carries the load; drop the "your site says" hooks; say so plainly |
+| No website | Interview carries the load; drop "your site says" hooks; say so plainly |
 | Few/no reviews | Mine competitor reviews for vocabulary; mark ICP notes "founder-stated, unverified" |
-| Founder answers only some sections | Fill what you can, list the gaps, offer a follow-up mini-list of just the missing questions |
-| Typed answers instead of voice | Fine; note that voice samples for tone are missing |
-| Audio quality too poor to transcribe | Ask for a re-record of just that section; never guess quotes |
-
-A worked end-to-end example lives in `example/`: a fictional window-cleaning company,
-its generated questions, and the rendered HTML sheet. Match its depth and tone.
+| Founder skips sections | Fill what you can, list gaps, offer a follow-up mini-list |
+| Typed answers only | Fine; note that voice samples for tone are missing |
+| Audio undecodable | ingest.sh names the file and keeps it safe in KV; check ffmpeg, re-run |
+| Windows machine | Everything works via Git Bash + winget installs (SETUP.md notes); macOS is the smoothest path |
