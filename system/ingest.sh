@@ -47,7 +47,7 @@ echo "$KEYS" | sed 's/^/  - /'
 
 decode () {  # decode <in> <out16kwav>; ffmpeg first (all formats), afconvert fallback (macOS)
   if command -v ffmpeg >/dev/null && ffmpeg -version >/dev/null 2>&1; then
-    ffmpeg -y -i "$1" -ar 16000 -ac 1 -f wav "$2" >/dev/null 2>&1 && return 0
+    ffmpeg -nostdin -y -i "$1" -ar 16000 -ac 1 -f wav "$2" >/dev/null 2>&1 && return 0
   fi
   command -v afconvert >/dev/null && afconvert -f WAVE -d LEI16@16000 -c 1 "$1" "$2" 2>/dev/null
 }
@@ -55,7 +55,7 @@ decode () {  # decode <in> <out16kwav>; ffmpeg first (all formats), afconvert fa
 while IFS= read -r KEY; do
   echo "== $KEY"
   RAW="$WORK/$KEY"
-  npx wrangler kv key get --namespace-id "$NS_ID" --remote "$KEY" > "$RAW" 2>/dev/null
+  npx wrangler kv key get --namespace-id "$NS_ID" --remote "$KEY" > "$RAW" 2>/dev/null < /dev/null
   { echo "## Take: \`$KEY\`"; echo; } >> "$OUT.tmp"
   if [ "${KEY##*.}" = "txt" ]; then
     cat "$RAW" >> "$OUT.tmp"; echo >> "$OUT.tmp"; echo >> "$OUT.tmp"; continue
@@ -65,7 +65,7 @@ while IFS= read -r KEY; do
     echo "  SKIP: could not decode $KEY (is ffmpeg installed?); kept in KV"
     echo "_SKIPPED (could not decode audio)._" >> "$OUT.tmp"; echo >> "$OUT.tmp"; continue
   fi
-  whisper-cli -m "$MODEL" -f "$WAV" -nt -np --prompt "$PROMPT" 2>/dev/null | sed 's/^ *//' >> "$OUT.tmp"
+  whisper-cli -m "$MODEL" -f "$WAV" -nt -np --prompt "$PROMPT" 2>/dev/null < /dev/null | sed 's/^ *//' >> "$OUT.tmp"
   echo >> "$OUT.tmp"; echo >> "$OUT.tmp"
 done <<< "$KEYS"
 
