@@ -50,6 +50,20 @@ waveform so they can see it's working, one section at a time with skipping offic
 allowed, and progress that's still there if they come back tomorrow. It reads like someone
 did their homework, because someone did.
 
+## What it looks like
+
+Screenshots of the demo page at phone width, which is how the founder sees it. The client is
+fictional ("ClearView Exterior Care"). The page is rendered from `system/worker.js` with the
+placeholders filled in.
+
+| Questions, all sections | One question at a time | Record a section | Mic test |
+|:--:|:--:|:--:|:--:|
+| <img src="screenshots/01-questions-top.jpg" width="200"> | <img src="screenshots/02-one-question-at-a-time.jpg" width="200"> | <img src="screenshots/03-section-record.jpg" width="200"> | <img src="screenshots/04-mic-test-passed.jpg" width="200"> |
+
+| Live recording | Take sent | Progress |
+|:--:|:--:|:--:|
+| <img src="screenshots/05-recording-live.jpg" width="200"> | <img src="screenshots/06-take-sent.jpg" width="200"> | <img src="screenshots/07-progress-one-of-eight.jpg" width="200"> |
+
 ## What's in this repo
 
 | Path | What it is |
